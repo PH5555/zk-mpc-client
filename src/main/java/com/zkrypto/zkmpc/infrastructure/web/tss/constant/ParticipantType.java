@@ -6,7 +6,11 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public enum ParticipantType {
-    AUXINFO("AuxInfo"), TSHARE("TShare"), TREFRESH("TRefresh"), TPRESIGN("TPreSign"), SIGN("Sign");
+    AUXINFO("AuxInfo"),
+    TSHARE("TShare"),
+    TREFRESH("TRefresh"),
+    TPRESIGN("TPreSign"),
+    SIGN("Sign");
 
     private String typeName;
 }
