@@ -1,0 +1,55 @@
+package com.zkrypto.zkmpc.common.serializer;
+
+import com.fasterxml.jackson.core.JacksonException;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.zkrypto.zkmpc.application.tss.dto.DelegateOutput;
+import com.zkrypto.zkmpc.application.tss.constant.DelegateOutputStatus;
+import com.zkrypto.zkmpc.common.exception.ErrorCode;
+import com.zkrypto.zkmpc.common.exception.TssException;
+import com.zkrypto.zkmpc.application.tss.dto.ContinueMessage;
+import com.zkrypto.zkmpc.application.tss.dto.DoneMessage;
+import lombok.extern.slf4j.Slf4j;
+
+import java.io.IOException;
+import java.util.List;
+
+@Slf4j
+public class DelegateOutputDeserializer extends JsonDeserializer<DelegateOutput> {
+    @Override
+    public DelegateOutput deserialize(JsonParser p, DeserializationContext deserializationContext) throws IOException, JacksonException {
+        // ObjectMapper를 가져와서 내부 파싱에 재사용합니다.
+        ObjectMapper mapper = new ObjectMapper();
+
+        // JSON을 트리 구조의 노드로 읽어옵니다.
+        JsonNode rootNode = null;
+        try {
+            rootNode = mapper.readTree(p);
+        } catch (IOException e) {
+            log.error(e.getMessage());
+            throw new TssException(ErrorCode.JSON_PARSE_ERROR);
+        }
+
+        // 최상위 키(key) 이름을 가져옵니다. ("Continue" 또는 "Done")
+        String typeKey = rootNode.fieldNames().next();
+
+        if ("Continue".equals(typeKey)) {
+            JsonNode continueNode = rootNode.get("Continue");
+            // "Continue" 키의 값(JSON 배열)을 List<ContinueMessage>로 파싱합니다.
+            List<ContinueMessage> messages = mapper.convertValue(continueNode, new TypeReference<>() {});
+            return new DelegateOutput(DelegateOutputStatus.CONTINUE, messages, null);
+
+        } else if ("Done".equals(typeKey)) {
+            JsonNode doneNode = rootNode.get("Done");
+            // "Done" 키의 값(JSON 객체)을 DoneMessage 객체로 파싱합니다.
+            DoneMessage message = mapper.convertValue(doneNode, DoneMessage.class);
+            return new DelegateOutput(DelegateOutputStatus.DONE, null, message);
+        }
+
+        throw new TssException(ErrorCode.JSON_PARSE_ERROR);
+    }
+}
