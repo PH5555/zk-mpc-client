@@ -16,6 +16,8 @@ public class Tss {
     private String auxInfo;
     @Setter
     private String shareInfo;
+    @Setter
+    private String preSign;
 
     private Tss(String groupId, String[] groupMemberIds) {
         this.groupId = groupId;

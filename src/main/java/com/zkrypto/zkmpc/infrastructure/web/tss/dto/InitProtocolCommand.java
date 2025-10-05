@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotNull;
 public record InitProtocolCommand(
         @NotNull ParticipantType participantType,
         @NotNull String sid,
-        @NotNull String[] otherIds
+        @NotNull String[] otherIds,
+        Integer threshold,
+        byte[] messageBytes
 ) {
 }

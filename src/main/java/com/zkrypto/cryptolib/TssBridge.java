@@ -87,36 +87,6 @@ public class TssBridge {
     );
 
     /**
-     * TRecover (Helper) 프로토콜에 필요한 입력값을 생성합니다.
-     *
-     * @param helperParticipantIds 복구를 도와줄 참여자들의 ID 배열
-     * @param myParticipantId 자신의 참여자 ID
-     * @param targetParticipantId 복구 대상 참여자의 ID
-     * @param tshareOutput TShare 프로토콜의 결과물 (JSON 문자열)
-     * @param auxinfoOutput AuxInfo 프로토콜의 결과물 (JSON 문자열)
-     * @param threshold 임계값
-     * @return TRecover Helper 입력값 (JSON 문자열)
-     */
-    public static native String generateTrecoverHelperInput(
-            String[] helperParticipantIds,
-            String myParticipantId,
-            String targetParticipantId,
-            String tshareOutput,
-            String auxinfoOutput,
-            int threshold
-    );
-
-    /**
-     * TRecover (Target) 프로토콜에 필요한 입력값을 생성합니다.
-     *
-     * @param helperParticipantIds 복구를 도와줄 참여자들의 ID 배열
-     * @param auxinfoOutput AuxInfo 프로토콜의 결과물 (JSON 문자열)
-     * @param threshold 임계값
-     * @return TRecover Target 입력값 (JSON 문자열)
-     */
-    public static native String generateTrecoverTargetInput(String[] helperParticipantIds, String auxinfoOutput, int threshold);
-
-    /**
      * 여러 참여자로부터 받은 서명 조각(share)들을 모아 최종 ECDSA 서명을 완성합니다.
      *
      * @param messages 각 참여자가 생성한 Sign 프로토콜의 결과 메시지 배열

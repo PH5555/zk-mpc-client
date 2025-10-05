@@ -2,5 +2,12 @@ spring:
   data:
     mongodb:
       uri: mongodb://localhost:27017/zkmpc
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
 client:
   id: "2394298371231"

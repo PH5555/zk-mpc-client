@@ -9,7 +9,7 @@ import com.zkrypto.zkmpc.common.util.JsonUtil;
 import com.zkrypto.zkmpc.application.tss.dto.ContinueMessage;
 import com.zkrypto.zkmpc.domain.tss.Tss;
 import com.zkrypto.zkmpc.domain.tss.TssRepository;
-import com.zkrypto.zkmpc.infrastructure.persistence.tss.TssRepositoryAdapter;
+import com.zkrypto.zkmpc.application.tss.TssRepositoryAdapter;
 import com.zkrypto.zkmpc.infrastructure.web.tss.constant.ParticipantType;
 import com.zkrypto.zkmpc.infrastructure.web.tss.dto.InitProtocolCommand;
 import com.zkrypto.zkmpc.infrastructure.web.tss.dto.ProceedRoundCommand;
@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigInteger;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -28,6 +29,7 @@ public class TssService {
     @Value("${client.id}")
     private String clientId;
     private final TssRepositoryAdapter tssAdapter;
+    private final TssMessageBroker tssMessageBroker;
 
     /**
      * 프로토콜에 대한 메시지를 생성하고 라운드를 시작하는 메서드입니다.
@@ -35,6 +37,7 @@ public class TssService {
      */
     public void initProtocol(InitProtocolCommand command) {
         // 팩토리 생성
+        log.info("팩토리 생성 시작");
         TssBridge.participantFactory(
                 command.participantType().getTypeName(),
                 command.sid(),
@@ -42,17 +45,25 @@ public class TssService {
                 command.otherIds(),
                 generateInput(command)
         );
+        log.info("팩토리 생성 끝");
 
         // ready message 생성
+        log.info("ready message 생성 시작");
         String readyMessage = TssBridge.readyMessageFactory(
                 command.participantType().getTypeName(),
                 command.sid(),
                 clientId
         );
+        log.info("ready message 생성 완료 {}", readyMessage.substring(10) + "...");
 
-        proceedRound(new ProceedRoundCommand(command.participantType(), readyMessage));
+        proceedRound(readyMessage);
     }
 
+    /**
+     * participantFactory를 실행하기 위한 input을 생성하는 메서드입니다.
+     * @param command
+     * @return
+     */
     private String generateInput(InitProtocolCommand command) {
         if(command.participantType() == ParticipantType.AUXINFO) {
             tssAdapter.saveGroup(command.sid(), command.otherIds());
@@ -62,7 +73,7 @@ public class TssService {
         if(command.participantType() == ParticipantType.TSHARE) {
             return TssBridge.generateTshareInput(
                     tssAdapter.getAuxInfo(command.sid()),
-                    3 //TODO: 스레스홀드 임시 데이터
+                    command.threshold()
             );
         }
 
@@ -75,13 +86,13 @@ public class TssService {
         }
 
         if(command.participantType() == ParticipantType.SIGN) {
-            byte[] bytes = new byte[2];
             return TssBridge.generateSignInput(
                     clientId,
                     command.otherIds(),
-                    "",
+                    tssAdapter.getTPresign(command.sid()),
                     tssAdapter.getTShare(command.sid()),
-                    bytes,3 // TODO: 임시
+                    command.messageBytes(),
+                    command.threshold()
             );
         }
 
@@ -89,7 +100,7 @@ public class TssService {
             return TssBridge.generateTrefreshInput(
                     tssAdapter.getTShare(command.sid()),
                     tssAdapter.getAuxInfo(command.sid()),
-                    3 //TODO: 스레스홀드 임시 데이터
+                    command.threshold()
             );
         }
 
@@ -98,21 +109,29 @@ public class TssService {
 
     /**
      * 메시지를 처리하고 다음 단계의 메시지를 생성 후 전달하는 메서드입니다.
-     * @param command
+     * @param message
      */
-    public void proceedRound(ProceedRoundCommand command) {
+    public void proceedRound(String message) {
+        // 받은 메시지에서 type 추출
+        ContinueMessage parsedMessage = (ContinueMessage)JsonUtil.parse(message, ContinueMessage.class);
+        String type = parsedMessage.getMessage_type().keySet().stream().findFirst().get();
+
         // 받은 메시지 delegateProcessMessage 실행
-        String processResult = TssBridge.delegateProcessMessage(command.participantType().getTypeName(), command.message());
+        log.info("delegate Process 시작");
+        String processResult = TssBridge.delegateProcessMessage(type, message);
 
         // output 파싱
         DelegateOutput output = (DelegateOutput)JsonUtil.parse(processResult, DelegateOutput.class);
+        log.info("delegate output: {}", output.toString());
 
         if(output.getDelegateOutputStatus() == DelegateOutputStatus.CONTINUE && !output.getContinueMessages().isEmpty()) {
             // output 결과가 continue 이고 빈 배열이 아니면 메시지 전송
+            log.info("메시지 전송 시작");
             sendAllMessages(output.getContinueMessages());
         }
         else if(output.getDelegateOutputStatus() == DelegateOutputStatus.DONE) {
             // output 결과가 Done 이면 auxinfo 저장
+            log.info("auxinfo 저장");
             tssAdapter.saveAuxInfo("temp", JsonUtil.toString(output.getDoneMessage()));
         }
     }
@@ -131,8 +150,9 @@ public class TssService {
                 ? tssAdapter.getAllGroupMemberIds(message.getIdentifier().toString()) // Is_broadcast이면 모든 참여자
                 : List.of(message.getTo().toString()); // 아니면 한명
 
-        // TODO: 메시지 큐 전달
-        // messageQueue.send(recipients, message.getContent(), sid);
-        log.info(recipients.size() + "명에게 메시지 전송: " + recipients);
+        // 각 수신자에게 메시지 전송
+        recipients.forEach(recipient -> {
+            tssMessageBroker.publish(recipient, JsonUtil.toString(message));
+        });
     }
 }

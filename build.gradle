@@ -31,6 +31,9 @@ dependencies {
 	//mongodb
 	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
 
+	//rabbitmq
+	implementation 'org.springframework.boot:spring-boot-starter-amqp'
+
 	//validation
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 

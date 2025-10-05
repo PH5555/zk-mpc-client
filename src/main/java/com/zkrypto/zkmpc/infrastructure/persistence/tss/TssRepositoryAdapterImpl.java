@@ -1,5 +1,6 @@
 package com.zkrypto.zkmpc.infrastructure.persistence.tss;
 
+import com.zkrypto.zkmpc.application.tss.TssRepositoryAdapter;
 import com.zkrypto.zkmpc.common.exception.ErrorCode;
 import com.zkrypto.zkmpc.common.exception.TssException;
 import com.zkrypto.zkmpc.domain.tss.Tss;
@@ -11,7 +12,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class TssRepositoryAdapter {
+public class TssRepositoryAdapterImpl implements TssRepositoryAdapter {
     private final TssRepository tssRepository;
 
     public List<String> getAllGroupMemberIds(String groupId) {
@@ -33,6 +34,12 @@ public class TssRepositoryAdapter {
     public String getTShare(String groupId) {
         Tss tss = getTssByGroupId(groupId);
         return tss.getShareInfo();
+    }
+
+    @Override
+    public String getTPresign(String groupId) {
+        Tss tss = getTssByGroupId(groupId);
+        return tss.getPreSign();
     }
 
     public void saveGroup(String groupId, String[] otherIds) {
