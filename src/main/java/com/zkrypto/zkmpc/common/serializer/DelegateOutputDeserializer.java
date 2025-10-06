@@ -12,7 +12,6 @@ import com.zkrypto.zkmpc.application.tss.constant.DelegateOutputStatus;
 import com.zkrypto.zkmpc.common.exception.ErrorCode;
 import com.zkrypto.zkmpc.common.exception.TssException;
 import com.zkrypto.zkmpc.application.tss.dto.ContinueMessage;
-import com.zkrypto.zkmpc.application.tss.dto.DoneMessage;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -45,9 +44,8 @@ public class DelegateOutputDeserializer extends JsonDeserializer<DelegateOutput>
 
         } else if ("Done".equals(typeKey)) {
             JsonNode doneNode = rootNode.get("Done");
-            // "Done" 키의 값(JSON 객체)을 DoneMessage 객체로 파싱합니다.
-            DoneMessage message = mapper.convertValue(doneNode, DoneMessage.class);
-            return new DelegateOutput(DelegateOutputStatus.DONE, null, message);
+
+            return new DelegateOutput(DelegateOutputStatus.DONE, null, doneNode.toString());
         }
 
         throw new TssException(ErrorCode.JSON_PARSE_ERROR);

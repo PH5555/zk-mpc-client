@@ -16,5 +16,5 @@ import java.util.List;
 public class DelegateOutput {
     private DelegateOutputStatus delegateOutputStatus;
     private List<ContinueMessage> continueMessages;
-    private DoneMessage doneMessage;
+    private Object doneMessage;
 }

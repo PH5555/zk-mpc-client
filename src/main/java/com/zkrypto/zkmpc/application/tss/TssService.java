@@ -103,7 +103,7 @@ public class TssService {
                 command.sid(),
                 clientId
         );
-        log.info("ready message 생성 완료 {}", readyMessage.substring(10) + "...");
+        log.info("ready message 생성 완료 {}", readyMessage.substring(0, 30) + "...");
 
         proceedRound(command.participantType().getTypeName(), readyMessage);
     }
@@ -116,10 +116,11 @@ public class TssService {
         // 받은 메시지 delegateProcessMessage 실행
         log.info("delegate Process 시작");
         String processResult = TssBridge.delegateProcessMessage(type, message);
+        log.info("delegate Process 결과 : " + processResult.substring(0, 30) + "...");
 
         // output 파싱
         DelegateOutput output = (DelegateOutput)JsonUtil.parse(processResult, DelegateOutput.class);
-        log.info("delegate output: {}", output.toString().substring(20) + "...");
+        log.info("delegate output: {}", output.toString().substring(0, 30) + "...");
 
         if(output.getDelegateOutputStatus() == DelegateOutputStatus.CONTINUE && !output.getContinueMessages().isEmpty()) {
             // output 결과가 continue 이고 빈 배열이 아니면 메시지 전송
@@ -129,7 +130,8 @@ public class TssService {
         else if(output.getDelegateOutputStatus() == DelegateOutputStatus.DONE) {
             // output 결과가 Done 이면 auxinfo 저장
             log.info("auxinfo 저장");
-            tssAdapter.saveAuxInfo("temp", JsonUtil.toString(output.getDoneMessage()).substring(20) + "...");
+            // TODO: groupId 임시
+            tssAdapter.saveAuxInfo("1", JsonUtil.toString(output.getDoneMessage()));
         }
     }
 
@@ -151,7 +153,7 @@ public class TssService {
 
         // 각 수신자에게 메시지 전송
         recipients.forEach(recipient -> {
-            log.info("메시지 전송 to :" + recipient + " message: " + JsonUtil.toString(message).substring(20) + "...");
+            log.info("메시지 전송 to :" + recipient + " message: " + JsonUtil.toString(message).substring(0, 30) + "...");
             tssMessageBroker.publish(recipient, JsonUtil.toString(message), type);
         });
     }
