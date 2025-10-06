@@ -1,6 +1,7 @@
 package com.zkrypto.zkmpc.infrastructure.web.tss;
 
 import com.zkrypto.zkmpc.application.tss.TssService;
+import com.zkrypto.zkmpc.infrastructure.amqp.dto.StartRoundCommand;
 import com.zkrypto.zkmpc.infrastructure.web.tss.dto.InitProtocolCommand;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,5 +18,10 @@ public class TssController {
     @PostMapping("/init")
     public void initProtocol(@RequestBody InitProtocolCommand initProtocolCommand) {
         tssService.initProtocol(initProtocolCommand);
+    }
+
+    @PostMapping("/start")
+    public void startProtocol(@RequestBody StartRoundCommand startRoundCommand) {
+        tssService.startRound(startRoundCommand);
     }
 }

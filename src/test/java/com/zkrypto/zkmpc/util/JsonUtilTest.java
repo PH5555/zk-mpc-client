@@ -1,5 +1,6 @@
 package com.zkrypto.zkmpc.util;
 
+import com.zkrypto.zkmpc.application.tss.dto.ContinueMessage;
 import com.zkrypto.zkmpc.application.tss.dto.DelegateOutput;
 import com.zkrypto.zkmpc.application.tss.constant.DelegateOutputStatus;
 import com.zkrypto.zkmpc.common.util.JsonUtil;
@@ -98,5 +99,12 @@ public class JsonUtilTest {
         String result = JsonUtil.toString(message.getDoneMessage());
         Assertions.assertThat(result).isNotNull();
         System.out.println(result);
+    }
+
+    @Test
+    void toStringTest() {
+        ContinueMessage message = new ContinueMessage();
+        String s = JsonUtil.toString(message);
+        System.out.println(s);
     }
 }
