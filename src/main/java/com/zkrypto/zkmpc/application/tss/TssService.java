@@ -119,7 +119,7 @@ public class TssService {
 
         // output 파싱
         DelegateOutput output = (DelegateOutput)JsonUtil.parse(processResult, DelegateOutput.class);
-        log.info("delegate output: {}", output.toString());
+        log.info("delegate output: {}", output.toString().substring(20) + "...");
 
         if(output.getDelegateOutputStatus() == DelegateOutputStatus.CONTINUE && !output.getContinueMessages().isEmpty()) {
             // output 결과가 continue 이고 빈 배열이 아니면 메시지 전송
@@ -129,7 +129,7 @@ public class TssService {
         else if(output.getDelegateOutputStatus() == DelegateOutputStatus.DONE) {
             // output 결과가 Done 이면 auxinfo 저장
             log.info("auxinfo 저장");
-            tssAdapter.saveAuxInfo("temp", JsonUtil.toString(output.getDoneMessage()));
+            tssAdapter.saveAuxInfo("temp", JsonUtil.toString(output.getDoneMessage()).substring(20) + "...");
         }
     }
 
@@ -151,7 +151,7 @@ public class TssService {
 
         // 각 수신자에게 메시지 전송
         recipients.forEach(recipient -> {
-            log.info("메시지 전송 to :" + recipient + "message: " + message);
+            log.info("메시지 전송 to :" + recipient + " message: " + JsonUtil.toString(message).substring(20) + "...");
             tssMessageBroker.publish(recipient, JsonUtil.toString(message), type);
         });
     }
