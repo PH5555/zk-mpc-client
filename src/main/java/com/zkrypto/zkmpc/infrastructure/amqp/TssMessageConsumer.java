@@ -2,6 +2,7 @@ package com.zkrypto.zkmpc.infrastructure.amqp;
 
 import com.zkrypto.zkmpc.application.tss.TssService;
 import com.zkrypto.zkmpc.common.config.RabbitMqConfig;
+import com.zkrypto.zkmpc.infrastructure.amqp.dto.ProceedRoundCommand;
 import com.zkrypto.zkmpc.infrastructure.web.tss.dto.InitProtocolCommand;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,9 +25,9 @@ public class TssMessageConsumer {
             exchange = @Exchange(value = RabbitMqConfig.TSS_EXCHANGE, type = ExchangeTypes.TOPIC),
             key = RabbitMqConfig.TSS_DELIVER_ROUTING_KEY_PREFIX + "${client.id}"
     ))
-    public void handleTssMessage(String message) {
+    public void handleTssMessage(ProceedRoundCommand command) {
         log.info("라운드 메시지 수신");
-        tssService.proceedRound(message);
+        tssService.proceedRound(command.type(), command.message());
     }
 
     @RabbitListener(bindings = @QueueBinding(

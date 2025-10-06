@@ -1,7 +1,7 @@
 spring:
   data:
     mongodb:
-      uri: mongodb://localhost:27017/zkmpc
+      uri: mongodb://localhost:27017/zkmpc2
 
   rabbitmq:
     host: localhost
@@ -10,4 +10,4 @@ spring:
     password: guest
 
 client:
-  id: "2394298371231"
+  id: "1"
