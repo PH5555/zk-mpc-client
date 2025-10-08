@@ -41,6 +41,8 @@ public class TssService {
                 generateInput(command)
         );
         log.info("팩토리 생성 끝");
+
+        // TODO: 팩토리 생성 완료 메시지 발송
     }
 
     /**
@@ -105,14 +107,14 @@ public class TssService {
         );
         log.info("ready message 생성 완료 {}", readyMessage.substring(0, 30) + "...");
 
-        proceedRound(command.participantType().getTypeName(), readyMessage);
+        proceedRound(command.participantType().getTypeName(), readyMessage, command.sid());
     }
 
     /**
      * 메시지를 처리하고 다음 단계의 메시지를 생성 후 전달하는 메서드입니다.
      * @param message
      */
-    public void proceedRound(String type, String message) {
+    public void proceedRound(String type, String message, String sid) {
         // 받은 메시지 delegateProcessMessage 실행
         log.info("delegate Process 시작");
         String processResult = TssBridge.delegateProcessMessage(type, message);
@@ -125,36 +127,13 @@ public class TssService {
         if(output.getDelegateOutputStatus() == DelegateOutputStatus.CONTINUE && !output.getContinueMessages().isEmpty()) {
             // output 결과가 continue 이고 빈 배열이 아니면 메시지 전송
             log.info("메시지 전송 시작");
-            sendAllMessages(output.getContinueMessages(), type);
+            tssMessageBroker.publish(JsonUtil.toString(output.getContinueMessages()), type, sid);
         }
         else if(output.getDelegateOutputStatus() == DelegateOutputStatus.DONE) {
             // output 결과가 Done 이면 auxinfo 저장
+            // TODO: type에 따라 다르게 저장
             log.info("auxinfo 저장");
-            // TODO: groupId 임시
-            tssAdapter.saveAuxInfo("1", JsonUtil.toString(output.getDoneMessage()));
+            tssAdapter.saveAuxInfo(sid, JsonUtil.toString(output.getDoneMessage()));
         }
-    }
-
-    private void sendAllMessages(List<ContinueMessage> continueMessages, String type) {
-        // broadcast 먼저 처리하도록 정렬
-        log.info("broad cast 정렬");
-        continueMessages.sort(Comparator.comparing(ContinueMessage::getIs_broadcast).reversed());
-
-        // 메시지 목록을 순회하며 각 메시지를 처리
-        log.info("메시지 목록 순회 시작");
-        continueMessages.forEach(message -> processAndSendMessage(message, type));
-    }
-
-    private void processAndSendMessage(ContinueMessage message, String type) {
-        // 메시지 수신자 결정
-        List<String> recipients = message.getIs_broadcast()
-                ? tssAdapter.getAllGroupMemberIds(message.getIdentifier().toString()) // Is_broadcast이면 모든 참여자
-                : List.of(message.getTo().toString()); // 아니면 한명
-
-        // 각 수신자에게 메시지 전송
-        recipients.forEach(recipient -> {
-            log.info("메시지 전송 to :" + recipient + " message: " + JsonUtil.toString(message).substring(0, 30) + "...");
-            tssMessageBroker.publish(recipient, JsonUtil.toString(message), type);
-        });
     }
 }

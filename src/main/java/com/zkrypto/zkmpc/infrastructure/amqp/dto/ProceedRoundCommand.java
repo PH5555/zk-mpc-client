@@ -5,6 +5,7 @@ import lombok.Builder;
 @Builder
 public record ProceedRoundCommand(
         String type,
-        String message
+        String message,
+        String sid
 ) {
 }

@@ -1,5 +1,5 @@
 package com.zkrypto.zkmpc.application.tss;
 
 public interface TssMessageBroker {
-    void publish(String recipient, String message, String type);
+    void publish(String message, String recipient, String type);
 }

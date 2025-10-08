@@ -27,7 +27,7 @@ public class TssMessageConsumer {
     ))
     public void handleTssMessage(ProceedRoundCommand command) {
         log.info("라운드 메시지 수신");
-        tssService.proceedRound(command.type(), command.message());
+        tssService.proceedRound(command.type(), command.message(), command.sid());
     }
 
     @RabbitListener(bindings = @QueueBinding(
