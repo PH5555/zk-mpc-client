@@ -27,7 +27,7 @@ public class TssService {
     private final TssMessageBroker tssMessageBroker;
 
     /**
-     * 프로토콜에 대한 메시지를 생성하고 라운드를 시작하는 메서드입니다.
+     * 라운드를 시작하기 위해 participantFactory를 실행하는 메서드입니다.
      * @param command
      */
     public void initProtocol(InitProtocolCommand command) {
@@ -94,7 +94,7 @@ public class TssService {
     }
 
     /**
-     * 레디 메시지를 생성하여 라운드를 시작하는 메서드입니다.
+     * ready message를 생성하여 라운드를 시작하는 메서드입니다.
      * @param command
      */
     public void startRound(StartRoundCommand command) {
