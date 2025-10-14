@@ -11,7 +11,6 @@ public class Tss {
     @Id
     private String id;
     private String groupId;
-    private String[] groupMemberIds;
     @Setter
     private String auxInfo;
     @Setter
@@ -19,12 +18,11 @@ public class Tss {
     @Setter
     private String preSign;
 
-    private Tss(String groupId, String[] groupMemberIds) {
+    private Tss(String groupId) {
         this.groupId = groupId;
-        this.groupMemberIds = groupMemberIds;
     }
 
-    public static Tss create(String groupId, String[] groupMemberIds) {
-        return new Tss(groupId, groupMemberIds);
+    public static Tss create(String groupId) {
+        return new Tss(groupId);
     }
 }

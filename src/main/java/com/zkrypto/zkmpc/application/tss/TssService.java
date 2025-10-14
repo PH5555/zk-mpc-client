@@ -1,21 +1,22 @@
 package com.zkrypto.zkmpc.application.tss;
 
 import com.zkrypto.cryptolib.TssBridge;
+import com.zkrypto.zkmpc.application.message.MessageBroker;
+import com.zkrypto.zkmpc.application.message.dto.InitProtocolEndEvent;
+import com.zkrypto.zkmpc.application.message.dto.ProtocolCompleteEvent;
+import com.zkrypto.zkmpc.application.message.dto.RoundEndEvent;
 import com.zkrypto.zkmpc.application.tss.dto.DelegateOutput;
 import com.zkrypto.zkmpc.application.tss.constant.DelegateOutputStatus;
 import com.zkrypto.zkmpc.common.exception.ErrorCode;
 import com.zkrypto.zkmpc.common.exception.TssException;
 import com.zkrypto.zkmpc.common.util.JsonUtil;
-import com.zkrypto.zkmpc.application.tss.dto.ContinueMessage;
-import com.zkrypto.zkmpc.infrastructure.amqp.dto.StartRoundCommand;
-import com.zkrypto.zkmpc.infrastructure.web.tss.constant.ParticipantType;
-import com.zkrypto.zkmpc.infrastructure.web.tss.dto.InitProtocolCommand;
+import com.zkrypto.zkmpc.application.tss.constant.ParticipantType;
+import com.zkrypto.zkmpc.infrastructure.amqp.dto.InitProtocolMessage;
+import com.zkrypto.zkmpc.infrastructure.amqp.dto.StartProtocolMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import java.util.Comparator;
-import java.util.List;
 
 @Slf4j
 @Service
@@ -23,70 +24,77 @@ import java.util.List;
 public class TssService {
     @Value("${client.id}")
     private String clientId;
+    private final MessageBroker messageBroker;
     private final TssRepositoryAdapter tssAdapter;
-    private final TssMessageBroker tssMessageBroker;
+    private final MessageBroker tssMessageBroker;
 
     /**
      * 라운드를 시작하기 위해 participantFactory를 실행하는 메서드입니다.
-     * @param command
+     * @param initProtocolMessage
      */
-    public void initProtocol(InitProtocolCommand command) {
+    public void initProtocol(InitProtocolMessage initProtocolMessage) {
         // 팩토리 생성
         log.info("팩토리 생성 시작");
         TssBridge.participantFactory(
-                command.participantType().getTypeName(),
-                command.sid(),
+                initProtocolMessage.participantType().getTypeName(),
+                initProtocolMessage.sid(),
                 clientId,
-                command.otherIds(),
-                generateInput(command)
+                initProtocolMessage.otherIds(),
+                generateInput(initProtocolMessage)
         );
         log.info("팩토리 생성 끝");
 
-        // TODO: 팩토리 생성 완료 메시지 발송
+        // 타입이 AUXINFO이면 그룹 정보 저장
+        if(initProtocolMessage.participantType() == ParticipantType.AUXINFO) {
+            tssAdapter.saveGroup(initProtocolMessage.sid());
+        }
+
+        // 팩토리 생성 완료 메시지 전송
+        InitProtocolEndEvent event = InitProtocolEndEvent.builder().memberId(clientId).type(initProtocolMessage.participantType()).sid(initProtocolMessage.sid()).build();
+        messageBroker.publish(event);
     }
 
     /**
      * participantFactory를 실행하기 위한 input을 생성하는 메서드입니다.
-     * @param command
+     * @param initProtocolMessage
      * @return
      */
-    private String generateInput(InitProtocolCommand command) {
-        if(command.participantType() == ParticipantType.AUXINFO) {
-            tssAdapter.saveGroup(command.sid(), command.otherIds());
+    private String generateInput(InitProtocolMessage initProtocolMessage) {
+        if(initProtocolMessage.participantType() == ParticipantType.AUXINFO) {
             return "";
         }
 
-        if(command.participantType() == ParticipantType.TSHARE) {
+        if(initProtocolMessage.participantType() == ParticipantType.TSHARE) {
             return TssBridge.generateTshareInput(
-                    tssAdapter.getAuxInfo(command.sid()),
-                    command.threshold()
+                    tssAdapter.getAuxInfo(initProtocolMessage.sid()),
+                    initProtocolMessage.threshold()
             );
         }
 
-        if(command.participantType() == ParticipantType.TPRESIGN) {
+        if(initProtocolMessage.participantType() == ParticipantType.TPRESIGN) {
             return TssBridge.generateTpresignInput(
-                    command.otherIds(),
-                    tssAdapter.getAuxInfo(command.sid()),
-                    tssAdapter.getTShare(command.sid())
+                    initProtocolMessage.otherIds(),
+                    tssAdapter.getAuxInfo(initProtocolMessage.sid()),
+                    tssAdapter.getTShare(initProtocolMessage.sid())
             );
         }
 
-        if(command.participantType() == ParticipantType.SIGN) {
+        if(initProtocolMessage.participantType() == ParticipantType.SIGN) {
             return TssBridge.generateSignInput(
                     clientId,
-                    command.otherIds(),
-                    tssAdapter.getTPresign(command.sid()),
-                    tssAdapter.getTShare(command.sid()),
-                    command.messageBytes(),
-                    command.threshold()
+                    initProtocolMessage.otherIds(),
+                    tssAdapter.getTPresign(initProtocolMessage.sid()),
+                    tssAdapter.getTShare(initProtocolMessage.sid()),
+                    initProtocolMessage.messageBytes(),
+                    initProtocolMessage.threshold()
             );
         }
 
-        if(command.participantType() == ParticipantType.TREFRESH) {
+        if(initProtocolMessage.participantType() == ParticipantType.TREFRESH) {
             return TssBridge.generateTrefreshInput(
-                    tssAdapter.getTShare(command.sid()),
-                    tssAdapter.getAuxInfo(command.sid()),
-                    command.threshold()
+                    tssAdapter.getTShare(initProtocolMessage.sid()),
+                    tssAdapter.getAuxInfo(initProtocolMessage.sid()),
+                    initProtocolMessage.threshold()
             );
         }
 
@@ -95,19 +103,19 @@ public class TssService {
 
     /**
      * ready message를 생성하여 라운드를 시작하는 메서드입니다.
-     * @param command
+     * @param message
      */
-    public void startRound(StartRoundCommand command) {
+    public void startProtocol(StartProtocolMessage message) {
         // ready message 생성
         log.info("ready message 생성 시작");
         String readyMessage = TssBridge.readyMessageFactory(
-                command.participantType().getTypeName(),
-                command.sid(),
+                message.type().getTypeName(),
+                message.sid(),
                 clientId
         );
         log.info("ready message 생성 완료 {}", readyMessage.substring(0, 30) + "...");
 
-        proceedRound(command.participantType().getTypeName(), readyMessage, command.sid());
+        proceedRound(message.type().getTypeName(), readyMessage, message.sid());
     }
 
     /**
@@ -127,13 +135,41 @@ public class TssService {
         if(output.getDelegateOutputStatus() == DelegateOutputStatus.CONTINUE && !output.getContinueMessages().isEmpty()) {
             // output 결과가 continue 이고 빈 배열이 아니면 메시지 전송
             log.info("메시지 전송 시작");
-            tssMessageBroker.publish(JsonUtil.toString(output.getContinueMessages()), type, sid);
+            RoundEndEvent event = RoundEndEvent.builder().message(JsonUtil.toString(output.getContinueMessages())).type(type).build();
+            tssMessageBroker.publish(event);
         }
         else if(output.getDelegateOutputStatus() == DelegateOutputStatus.DONE) {
-            // output 결과가 Done 이면 auxinfo 저장
-            // TODO: type에 따라 다르게 저장
-            log.info("auxinfo 저장");
+            // output 결과 저장
+            saveOutput(output, type, sid);
+
+            // 종료 메시지 전달
+            log.info("종료 메시지 전송 시작");
+            ProtocolCompleteEvent event = ProtocolCompleteEvent.builder()
+                    .type(ParticipantType.of(type))
+                    .memberId(clientId)
+                    .sid(sid)
+                    .build();
+            tssMessageBroker.publish(event);
+        }
+    }
+
+    /**
+     * 프로토콜 종료시 타입에 따라 데이터를 저장하는 메서드입니다.
+     * @param output 종료 데이터
+     * @param type 프로토콜 타입
+     */
+    private void saveOutput(DelegateOutput output, String type, String sid) {
+        if(type.equals(ParticipantType.AUXINFO.getTypeName())) {
             tssAdapter.saveAuxInfo(sid, JsonUtil.toString(output.getDoneMessage()));
+            return;
+        }
+        if(type.equals(ParticipantType.TSHARE.getTypeName())) {
+            tssAdapter.saveTShare(sid, JsonUtil.toString(output.getDoneMessage()));
+            return;
+        }
+        if(type.equals(ParticipantType.TPRESIGN.getTypeName())) {
+            tssAdapter.saveTPresign(sid, JsonUtil.toString(output.getDoneMessage()));
+            return;
         }
     }
 }

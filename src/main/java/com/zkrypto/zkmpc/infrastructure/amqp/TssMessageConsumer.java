@@ -2,8 +2,9 @@ package com.zkrypto.zkmpc.infrastructure.amqp;
 
 import com.zkrypto.zkmpc.application.tss.TssService;
 import com.zkrypto.zkmpc.common.config.RabbitMqConfig;
-import com.zkrypto.zkmpc.infrastructure.amqp.dto.ProceedRoundCommand;
-import com.zkrypto.zkmpc.infrastructure.web.tss.dto.InitProtocolCommand;
+import com.zkrypto.zkmpc.infrastructure.amqp.dto.InitProtocolMessage;
+import com.zkrypto.zkmpc.infrastructure.amqp.dto.ProceedRoundMessage;
+import com.zkrypto.zkmpc.infrastructure.amqp.dto.StartProtocolMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.ExchangeTypes;
@@ -23,20 +24,30 @@ public class TssMessageConsumer {
     @RabbitListener(bindings = @QueueBinding(
             value = @Queue(value = "", durable = "true", exclusive = "true", autoDelete = "false"),
             exchange = @Exchange(value = RabbitMqConfig.TSS_EXCHANGE, type = ExchangeTypes.TOPIC),
-            key = RabbitMqConfig.TSS_DELIVER_ROUTING_KEY_PREFIX + "${client.id}"
+            key = RabbitMqConfig.TSS_ROUND_ROUTING_KEY_PREFIX + "${client.id}"
     ))
-    public void handleTssMessage(ProceedRoundCommand command) {
+    public void handleTssMessage(ProceedRoundMessage message) {
         log.info("라운드 메시지 수신");
-        tssService.proceedRound(command.type(), command.message(), command.sid());
+        tssService.proceedRound(message.type(), message.message(), message.sid());
     }
 
     @RabbitListener(bindings = @QueueBinding(
             value = @Queue(value = "", durable = "true", exclusive = "true", autoDelete = "false"),
             exchange = @Exchange(value = RabbitMqConfig.TSS_EXCHANGE, type = ExchangeTypes.TOPIC),
-            key = RabbitMqConfig.TSS_INIT_ROUTING_KEY_PREFIX + "${client.id}"
+            key = RabbitMqConfig.TSS_START_ROUTING_KEY_PREFIX + "${client.id}"
     ))
-    public void initTssMessage(InitProtocolCommand command) {
+    public void startTssProtocol(StartProtocolMessage message) {
         log.info("프로토콜 시작 메시지 수신");
-        tssService.initProtocol(command);
+        tssService.startProtocol(message);
+    }
+
+    @RabbitListener(bindings = @QueueBinding(
+            value = @Queue(value = "", durable = "true", exclusive = "true", autoDelete = "false"),
+            exchange = @Exchange(value = RabbitMqConfig.TSS_EXCHANGE, type = ExchangeTypes.TOPIC),
+            key = RabbitMqConfig.TSS_START_ROUTING_KEY_PREFIX + "${client.id}"
+    ))
+    public void startTssProtocol(InitProtocolMessage message) {
+        log.info("프로토콜 초기화 메시지 수신");
+        tssService.initProtocol(message);
     }
 }

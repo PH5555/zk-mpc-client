@@ -8,17 +8,10 @@ import com.zkrypto.zkmpc.domain.tss.TssRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
 @Component
 @RequiredArgsConstructor
 public class TssRepositoryAdapterImpl implements TssRepositoryAdapter {
     private final TssRepository tssRepository;
-
-    public List<String> getAllGroupMemberIds(String groupId) {
-        Tss tss = getTssByGroupId(groupId);
-        return List.of(tss.getGroupMemberIds());
-    }
 
     public void saveAuxInfo(String groupId, String auxInfo) {
         Tss tss = getTssByGroupId(groupId);
@@ -31,9 +24,23 @@ public class TssRepositoryAdapterImpl implements TssRepositoryAdapter {
         return tss.getAuxInfo();
     }
 
+    @Override
+    public void saveTShare(String groupId, String tShare) {
+        Tss tss = getTssByGroupId(groupId);
+        tss.setShareInfo(tShare);
+        tssRepository.save(tss);
+    }
+
     public String getTShare(String groupId) {
         Tss tss = getTssByGroupId(groupId);
         return tss.getShareInfo();
+    }
+
+    @Override
+    public void saveTPresign(String groupId, String tPresign) {
+        Tss tss = getTssByGroupId(groupId);
+        tss.setPreSign(tPresign);
+        tssRepository.save(tss);
     }
 
     @Override
@@ -42,8 +49,8 @@ public class TssRepositoryAdapterImpl implements TssRepositoryAdapter {
         return tss.getPreSign();
     }
 
-    public void saveGroup(String groupId, String[] otherIds) {
-        Tss tss = Tss.create(groupId, otherIds);
+    public void saveGroup(String groupId) {
+        Tss tss = Tss.create(groupId);
         tssRepository.save(tss);
     }
 
