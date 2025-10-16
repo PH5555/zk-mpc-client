@@ -26,7 +26,6 @@ public class TssService {
     private String clientId;
     private final MessageBroker messageBroker;
     private final TssRepositoryAdapter tssAdapter;
-    private final MessageBroker tssMessageBroker;
 
     /**
      * 라운드를 시작하기 위해 participantFactory를 실행하는 메서드입니다.
@@ -137,7 +136,7 @@ public class TssService {
             // output 결과가 continue 이고 빈 배열이 아니면 메시지 전송
             log.info("메시지 전송 시작");
             RoundEndEvent event = RoundEndEvent.builder().message(JsonUtil.toString(output.getContinueMessages())).type(type).build();
-            tssMessageBroker.publish(event);
+            messageBroker.publish(event);
         }
         else if(output.getDelegateOutputStatus() == DelegateOutputStatus.DONE) {
             // output 결과 저장
@@ -150,7 +149,7 @@ public class TssService {
                     .memberId(clientId)
                     .sid(sid)
                     .build();
-            tssMessageBroker.publish(event);
+            messageBroker.publish(event);
         }
     }
 
