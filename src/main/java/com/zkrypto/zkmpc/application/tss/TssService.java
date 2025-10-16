@@ -50,6 +50,7 @@ public class TssService {
         }
 
         // 팩토리 생성 완료 메시지 전송
+        log.info("프로토콜 생성 완료 메시지 전송");
         InitProtocolEndEvent event = InitProtocolEndEvent.builder().memberId(clientId).type(initProtocolMessage.participantType()).sid(initProtocolMessage.sid()).build();
         messageBroker.publish(event);
     }
