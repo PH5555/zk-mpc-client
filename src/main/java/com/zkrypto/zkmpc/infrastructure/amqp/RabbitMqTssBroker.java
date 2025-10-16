@@ -21,7 +21,7 @@ public class RabbitMqTssBroker implements MessageBroker {
     @Override
     public void publish(RoundEndEvent event) {
         String routingKey = RabbitMqConfig.TSS_ROUND_END_ROUTING_KEY_PREFIX;
-        ProceedRoundMessage message = ProceedRoundMessage.builder().message(event.message()).type(event.type()).build();
+        ProceedRoundMessage message = ProceedRoundMessage.builder().message(event.message()).type(event.type()).sid(event.sid()).build();
         rabbitTemplate.convertAndSend(RabbitMqConfig.TSS_EXCHANGE, routingKey, message);
     }
 

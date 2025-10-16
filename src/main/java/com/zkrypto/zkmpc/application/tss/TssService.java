@@ -135,7 +135,7 @@ public class TssService {
         if(output.getDelegateOutputStatus() == DelegateOutputStatus.CONTINUE && !output.getContinueMessages().isEmpty()) {
             // output 결과가 continue 이고 빈 배열이 아니면 메시지 전송
             log.info("메시지 전송 시작");
-            RoundEndEvent event = RoundEndEvent.builder().message(JsonUtil.toString(output.getContinueMessages())).type(type).build();
+            RoundEndEvent event = RoundEndEvent.builder().message(processResult).type(type).sid(sid).build();
             messageBroker.publish(event);
         }
         else if(output.getDelegateOutputStatus() == DelegateOutputStatus.DONE) {

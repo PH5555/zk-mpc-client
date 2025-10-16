@@ -5,6 +5,7 @@ import lombok.Builder;
 @Builder
 public record RoundEndEvent(
         String message,
-        String type
+        String type,
+        String sid
 ) {
 }
