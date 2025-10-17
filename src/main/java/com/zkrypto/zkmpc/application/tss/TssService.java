@@ -33,7 +33,7 @@ public class TssService {
      */
     public void initProtocol(InitProtocolMessage initProtocolMessage) {
         // 팩토리 생성
-        log.info("팩토리 생성 시작");
+        log.info("팩토리 생성 시작 : {}", initProtocolMessage.participantType());
         TssBridge.participantFactory(
                 initProtocolMessage.participantType().getTypeName(),
                 initProtocolMessage.sid(),

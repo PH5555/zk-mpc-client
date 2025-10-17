@@ -4,7 +4,8 @@ spring:
 
   data:
     mongodb:
-      uri: mongodb://localhost:27017/zkmpc1
+      uri: mongodb://localhost:27017/zkmpc
+      auto-index-creation: false
 
   rabbitmq:
     host: localhost

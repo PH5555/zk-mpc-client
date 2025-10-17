@@ -4,7 +4,6 @@ import com.zkrypto.zkmpc.domain.tss.Tss;
 import com.zkrypto.zkmpc.domain.tss.TssRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-
 import java.util.Optional;
 
 @Repository
