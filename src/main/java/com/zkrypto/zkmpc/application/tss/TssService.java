@@ -160,15 +160,15 @@ public class TssService {
      */
     private void saveOutput(DelegateOutput output, String type, String sid) {
         if(type.equals(ParticipantType.AUXINFO.getTypeName())) {
-            tssAdapter.saveAuxInfo(sid, JsonUtil.toString(output.getDoneMessage()));
+            tssAdapter.saveAuxInfo(sid, output.getDoneMessage().toString());
             return;
         }
         if(type.equals(ParticipantType.TSHARE.getTypeName())) {
-            tssAdapter.saveTShare(sid, JsonUtil.toString(output.getDoneMessage()));
+            tssAdapter.saveTShare(sid, output.getDoneMessage().toString());
             return;
         }
         if(type.equals(ParticipantType.TPRESIGN.getTypeName())) {
-            tssAdapter.saveTPresign(sid, JsonUtil.toString(output.getDoneMessage()));
+            tssAdapter.saveTPresign(sid, output.getDoneMessage().toString());
             return;
         }
     }
