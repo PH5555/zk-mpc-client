@@ -138,6 +138,9 @@ public class TssService {
             RoundEndEvent event = RoundEndEvent.builder().message(processResult).type(type).sid(sid).build();
             messageBroker.publish(event);
         }
+        else if(output.getDelegateOutputStatus() == DelegateOutputStatus.CONTINUE && output.getContinueMessages().isEmpty()) {
+            log.info("continue 빈배열");
+        }
         else if(output.getDelegateOutputStatus() == DelegateOutputStatus.DONE) {
             // output 결과 저장
             saveOutput(output, type, sid);
