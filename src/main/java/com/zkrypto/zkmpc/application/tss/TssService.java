@@ -15,6 +15,7 @@ import com.zkrypto.zkmpc.infrastructure.amqp.dto.InitProtocolMessage;
 import com.zkrypto.zkmpc.infrastructure.amqp.dto.StartProtocolMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -33,7 +34,7 @@ public class TssService {
      */
     public void initProtocol(InitProtocolMessage initProtocolMessage) {
         // 팩토리 생성
-        log.info("팩토리 생성 시작 : {}", initProtocolMessage.participantType());
+        log.info("{} 팩토리 생성 시작", initProtocolMessage.participantType());
         TssBridge.participantFactory(
                 initProtocolMessage.participantType().getTypeName(),
                 initProtocolMessage.sid(),
@@ -49,7 +50,7 @@ public class TssService {
         }
 
         // 팩토리 생성 완료 메시지 전송
-        log.info("프로토콜 생성 완료 메시지 전송");
+        log.info("프로토콜 초기화 완료 메시지 전송");
         InitProtocolEndEvent event = InitProtocolEndEvent.builder().memberId(clientId).type(initProtocolMessage.participantType()).sid(initProtocolMessage.sid()).build();
         messageBroker.publish(event);
     }
@@ -107,13 +108,13 @@ public class TssService {
      */
     public void startProtocol(StartProtocolMessage message) {
         // ready message 생성
-        log.info("ready message 생성 시작");
+        log.info("{} ready message 생성 시작", message.type());
         String readyMessage = TssBridge.readyMessageFactory(
                 message.type().getTypeName(),
                 message.sid(),
                 clientId
         );
-        log.info("ready message 생성 완료 {}", readyMessage.substring(0, 30) + "...");
+        log.info("ready message 생성 완료 {}", StringUtils.abbreviate(readyMessage, 200));
 
         proceedRound(message.type().getTypeName(), readyMessage, message.sid());
     }
@@ -126,15 +127,14 @@ public class TssService {
         // 받은 메시지 delegateProcessMessage 실행
         log.info("delegate Process 시작");
         String processResult = TssBridge.delegateProcessMessage(type, message);
-        log.info("delegate Process 결과 : " + processResult.substring(0, 30) + "...");
+        log.info("delegate Process 결과 : " + StringUtils.abbreviate(processResult, 200));
 
         // output 파싱
         DelegateOutput output = (DelegateOutput)JsonUtil.parse(processResult, DelegateOutput.class);
-        log.info("delegate output: {}", output.toString().substring(0, 30) + "...");
 
         if(output.getDelegateOutputStatus() == DelegateOutputStatus.CONTINUE && !output.getContinueMessages().isEmpty()) {
             // output 결과가 continue 이고 빈 배열이 아니면 메시지 전송
-            log.info("메시지 전송 시작");
+            log.info("core 서버로 process 결과 전송");
             RoundEndEvent event = RoundEndEvent.builder().message(processResult).type(type).sid(sid).build();
             messageBroker.publish(event);
         }
@@ -143,7 +143,7 @@ public class TssService {
             saveOutput(output, type, sid);
 
             // 종료 메시지 전달
-            log.info("종료 메시지 전송 시작");
+            log.info("{} 종료 메시지 전송", type);
             ProtocolCompleteEvent event = ProtocolCompleteEvent.builder()
                     .type(ParticipantType.of(type))
                     .memberId(clientId)
