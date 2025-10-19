@@ -1,7 +1,9 @@
 package com.zkrypto.zkmpc.application.tss.constant;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 
+@Getter
 @AllArgsConstructor
 public enum Round {
     // TShare rounds

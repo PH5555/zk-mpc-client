@@ -33,7 +33,7 @@ public class TssService {
 
     /**
      * 라운드를 시작하기 위해 participantFactory를 실행하는 메서드입니다.
-     * @param initProtocolMessage
+     * @param initProtocolMessage initProtocolMessage
      */
     public void initProtocol(InitProtocolMessage initProtocolMessage) {
         // 팩토리 생성
@@ -60,8 +60,8 @@ public class TssService {
 
     /**
      * participantFactory를 실행하기 위한 input을 생성하는 메서드입니다.
-     * @param initProtocolMessage
-     * @return
+     * @param initProtocolMessage initProtocolMessage
+     * @return input 데이터
      */
     private String generateInput(InitProtocolMessage initProtocolMessage) {
         if(initProtocolMessage.participantType() == ParticipantType.AUXINFO) {
@@ -107,7 +107,7 @@ public class TssService {
 
     /**
      * ready message를 생성하여 라운드를 시작하는 메서드입니다.
-     * @param message
+     * @param message message
      */
     public void startProtocol(StartProtocolMessage message) {
         // ready message 생성
@@ -123,51 +123,84 @@ public class TssService {
     }
 
     /**
-     * 메시지를 처리하고 다음 단계의 메시지를 생성 후 전달하는 메서드입니다.
-     * @param message
+     * 라운드를 진행하는 메서드입니다.
+     * continue 메시지일 경우 core 서버에 메시지를 전송합니다.
+     * Done 메시지일 경우 type에 맞는 처리를 하고 core 서버에 종료 메시지를 전송합니다.
+     * @param type 메시지 타입
+     * @param message 메시지
+     * @param sid 그룹 id
      */
     public void proceedRound(String type, String message, String sid) {
-        // 받은 메시지 delegateProcessMessage 실행
+        // 메시지 처리 및 결과 파싱
         log.info("delegate Process 시작");
         String processResult = TssBridge.delegateProcessMessage(type, message);
         log.info("delegate Process 결과 : " + StringUtils.abbreviate(processResult, 200));
 
-        // output 파싱
-        DelegateOutput output = (DelegateOutput)JsonUtil.parse(processResult, DelegateOutput.class);
+        DelegateOutput output = (DelegateOutput) JsonUtil.parse(processResult, DelegateOutput.class);
 
-        if(output.getDelegateOutputStatus() == DelegateOutputStatus.CONTINUE && !output.getContinueMessages().isEmpty()) {
-            // output 결과가 continue 이고 빈 배열이 아니면 메시지 전송
-            log.info("core 서버로 process 결과 전송");
-            RoundEndEvent event = RoundEndEvent.builder().message(processResult).type(type).sid(sid).build();
-            messageBroker.publish(event);
+        // 결과 상태에 따라 분기 처리
+        if (output.getDelegateOutputStatus() == DelegateOutputStatus.CONTINUE) {
+            handleContinue(output, message, type, sid, processResult);
+        } else if (output.getDelegateOutputStatus() == DelegateOutputStatus.DONE) {
+            handleDone(output, type, sid);
         }
-        else if(output.getDelegateOutputStatus() == DelegateOutputStatus.CONTINUE && output.getContinueMessages().isEmpty()) {
-            //메시지에서 라운드 추출
-            ContinueMessage continueMessage = (ContinueMessage)JsonUtil.parse(message, ContinueMessage.class);
-            Round round = continueMessage.getMessage_type().values().stream().findFirst().map(Round::fromName)
-                    .orElseThrow(() -> new TssException(ErrorCode.NOT_FOUND_ROUND));
+    }
 
-            log.info("{} 완료 메시지 전송", round.name());
+    /**
+     * continue 메시지를 처리하는 메서드입니다.
+     * continue 배열이 비어있지 않으면 라운드 종료 메시지를 전송합니다.
+     * continue 배열이 비어있으면 다음 라운드 진행을 위해 현재 라운드 완료 메시지를 전송합니다.
+     * @param output delegate 결과 파싱 output
+     * @param originalMessage 메시지
+     * @param type 메시지 타입
+     * @param sid 그룹 id
+     * @param processResult delegate 결과
+     */
+    private void handleContinue(DelegateOutput output, String originalMessage, String type, String sid, String processResult) {
+        if (!output.getContinueMessages().isEmpty()) {
+            // 처리할 메시지가 남아있는 경우: 다음 라운드로 메시지 전달
+            log.info("core 서버로 process 결과 전송");
+            RoundEndEvent event = RoundEndEvent.builder()
+                    .message(processResult)
+                    .type(type)
+                    .sid(sid)
+                    .build();
+            messageBroker.publish(event);
+        } else {
+            // 처리할 메시지가 없는 경우: 현재 라운드 완료
+            ContinueMessage continueMessage = (ContinueMessage)JsonUtil.parse(originalMessage, ContinueMessage.class);
+            Round round = continueMessage.extractRound();
+
+            log.info("{} 완료 메시지 전송", round.getName());
             RoundCompleteEvent event = RoundCompleteEvent.builder()
-                    .roundName(round.name())
+                    .roundName(round.getName())
                     .sid(sid)
                     .type(type)
                     .build();
             messageBroker.publish(event);
         }
-        else if(output.getDelegateOutputStatus() == DelegateOutputStatus.DONE) {
-            // output 결과 저장
-            saveOutput(output, type, sid);
+    }
 
-            // 종료 메시지 전달
-            log.info("{} 종료 메시지 전송", type);
-            ProtocolCompleteEvent event = ProtocolCompleteEvent.builder()
-                    .type(ParticipantType.of(type))
-                    .memberId(clientId)
-                    .sid(sid)
-                    .build();
-            messageBroker.publish(event);
-        }
+    /**
+     * Done 메시지를 처리하는 메서드입니다.
+     * 메시지 타입에 따라 결과를 저장합니다.
+     * core 서버에 종료 메시지를 전송합니다.
+     * @param output 결과
+     * @param type 메시지 타입
+     * @param sid 그룹 id
+     */
+    private void handleDone(DelegateOutput output, String type, String sid) {
+        // 결과 저장
+        saveOutput(output, type, sid);
+
+        // 프로토콜 종료 이벤트 발행
+        log.info("{} 종료 메시지 전송", type);
+        ProtocolCompleteEvent event = ProtocolCompleteEvent.builder()
+                .type(ParticipantType.of(type))
+                .memberId(clientId)
+                .sid(sid)
+                .build();
+        messageBroker.publish(event);
     }
 
     /**
