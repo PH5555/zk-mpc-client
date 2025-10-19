@@ -10,6 +10,7 @@ import java.util.Map;
 @ToString
 @Getter
 public class ContinueMessage {
+    private Object type;
     private Map<String, String> message_type;
     private BigInteger identifier;
     private BigInteger from;

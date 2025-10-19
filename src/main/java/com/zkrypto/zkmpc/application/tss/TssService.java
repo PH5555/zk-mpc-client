@@ -4,7 +4,10 @@ import com.zkrypto.cryptolib.TssBridge;
 import com.zkrypto.zkmpc.application.message.MessageBroker;
 import com.zkrypto.zkmpc.application.message.dto.InitProtocolEndEvent;
 import com.zkrypto.zkmpc.application.message.dto.ProtocolCompleteEvent;
+import com.zkrypto.zkmpc.application.message.dto.RoundCompleteEvent;
 import com.zkrypto.zkmpc.application.message.dto.RoundEndEvent;
+import com.zkrypto.zkmpc.application.tss.constant.Round;
+import com.zkrypto.zkmpc.application.tss.dto.ContinueMessage;
 import com.zkrypto.zkmpc.application.tss.dto.DelegateOutput;
 import com.zkrypto.zkmpc.application.tss.constant.DelegateOutputStatus;
 import com.zkrypto.zkmpc.common.exception.ErrorCode;
@@ -139,7 +142,18 @@ public class TssService {
             messageBroker.publish(event);
         }
         else if(output.getDelegateOutputStatus() == DelegateOutputStatus.CONTINUE && output.getContinueMessages().isEmpty()) {
-            log.info("continue 빈배열");
+            //메시지에서 라운드 추출
+            ContinueMessage continueMessage = (ContinueMessage)JsonUtil.parse(message, ContinueMessage.class);
+            Round round = continueMessage.getMessage_type().values().stream().findFirst().map(Round::fromName)
+                    .orElseThrow(() -> new TssException(ErrorCode.NOT_FOUND_ROUND));
+
+            log.info("{} 완료 메시지 전송", round.name());
+            RoundCompleteEvent event = RoundCompleteEvent.builder()
+                    .roundName(round.name())
+                    .sid(sid)
+                    .type(type)
+                    .build();
+            messageBroker.publish(event);
         }
         else if(output.getDelegateOutputStatus() == DelegateOutputStatus.DONE) {
             // output 결과 저장
