@@ -77,7 +77,7 @@ public class TssService {
 
         if(initProtocolMessage.participantType() == ParticipantType.TPRESIGN) {
             return TssBridge.generateTpresignInput(
-                    initProtocolMessage.otherIds(),
+                    initProtocolMessage.participantIds(),
                     tssAdapter.getAuxInfo(initProtocolMessage.sid()),
                     tssAdapter.getTShare(initProtocolMessage.sid())
             );
@@ -86,7 +86,7 @@ public class TssService {
         if(initProtocolMessage.participantType() == ParticipantType.SIGN) {
             return TssBridge.generateSignInput(
                     clientId,
-                    initProtocolMessage.otherIds(),
+                    initProtocolMessage.participantIds(),
                     tssAdapter.getTPresign(initProtocolMessage.sid()),
                     tssAdapter.getTShare(initProtocolMessage.sid()),
                     initProtocolMessage.messageBytes(),
