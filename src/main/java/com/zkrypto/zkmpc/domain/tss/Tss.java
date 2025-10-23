@@ -19,6 +19,8 @@ public class Tss {
     private String shareInfo;
     @Setter
     private String preSign;
+    @Setter
+    private String publicKey;
 
     private Tss(String groupId) {
         this.groupId = groupId;

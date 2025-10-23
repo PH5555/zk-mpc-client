@@ -214,7 +214,10 @@ public class TssService {
             return;
         }
         if(type.equals(ParticipantType.TSHARE.getTypeName())) {
+            String publicKey = TssBridge.getMasterKey(output.getDoneMessage().toString());
+            log.debug("pk : {}", publicKey);
             tssAdapter.saveTShare(sid, output.getDoneMessage().toString());
+            tssAdapter.savePublicKey(sid, publicKey);
             return;
         }
         if(type.equals(ParticipantType.TPRESIGN.getTypeName())) {

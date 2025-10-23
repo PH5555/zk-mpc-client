@@ -37,6 +37,19 @@ public class TssRepositoryAdapterImpl implements TssRepositoryAdapter {
     }
 
     @Override
+    public void savePublicKey(String groupId, String publicKey) {
+        Tss tss = getTssByGroupId(groupId);
+        tss.setPublicKey(publicKey);
+        tssRepository.save(tss);
+    }
+
+    @Override
+    public String getPublicKey(String groupId) {
+        Tss tss = getTssByGroupId(groupId);
+        return tss.getPublicKey();
+    }
+
+    @Override
     public void saveTPresign(String groupId, String tPresign) {
         Tss tss = getTssByGroupId(groupId);
         tss.setPreSign(tPresign);
