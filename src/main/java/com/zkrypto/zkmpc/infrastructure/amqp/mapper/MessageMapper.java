@@ -27,6 +27,8 @@ public class MessageMapper {
                 .sid(event.sid())
                 .memberId(event.memberId())
                 .type(event.type())
+                .message(event.message())
+                .pk(event.pk())
                 .build();
     }
 

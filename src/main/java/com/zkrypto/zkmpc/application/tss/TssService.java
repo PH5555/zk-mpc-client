@@ -195,10 +195,13 @@ public class TssService {
 
         // 프로토콜 종료 이벤트 발행
         log.info("{} 종료 메시지 전송", type);
+        String publicKey = tssAdapter.getPublicKey(sid);
         ProtocolCompleteEvent event = ProtocolCompleteEvent.builder()
                 .type(ParticipantType.of(type))
                 .memberId(clientId)
                 .sid(sid)
+                .message(output.getDoneMessage().toString())
+                .pk(publicKey)
                 .build();
         messageBroker.publish(event);
     }
@@ -215,7 +218,7 @@ public class TssService {
         }
         if(type.equals(ParticipantType.TSHARE.getTypeName())) {
             String publicKey = TssBridge.getMasterKey(output.getDoneMessage().toString());
-            log.debug("pk : {}", publicKey);
+            log.info("pk : {}", publicKey);
             tssAdapter.saveTShare(sid, output.getDoneMessage().toString());
             tssAdapter.savePublicKey(sid, publicKey);
             return;
