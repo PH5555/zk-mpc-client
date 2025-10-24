@@ -9,9 +9,6 @@ public interface TssRepositoryAdapter {
     void saveTShare(String groupId, String tShare);
     String getTShare(String groupId);
 
-    void savePublicKey(String groupId, String publicKey);
-    String getPublicKey(String groupId);
-
     void saveTPresign(String groupId, String tPresign);
     String getTPresign(String groupId);
     void saveGroup(String groupId);
