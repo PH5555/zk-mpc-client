@@ -12,7 +12,7 @@ import java.util.Arrays;
 public enum ParticipantType {
     AUXINFO("AuxInfo"),
     TSHARE("TShare"),
-    TREFRESH("TRefresh"),
+    TRECOVER("TRecover"),
     TPRESIGN("TPreSign"),
     SIGN("Sign");
 

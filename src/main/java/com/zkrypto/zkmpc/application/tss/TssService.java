@@ -20,12 +20,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class TssService {
+    private final ApplicationRunner init;
     @Value("${client.id}")
     private String clientId;
     private final MessageBroker messageBroker;
@@ -94,12 +96,24 @@ public class TssService {
             );
         }
 
-        if(initProtocolMessage.participantType() == ParticipantType.TREFRESH) {
-            return TssBridge.generateTrefreshInput(
-                    tssAdapter.getTShare(initProtocolMessage.sid()),
-                    tssAdapter.getAuxInfo(initProtocolMessage.sid()),
-                    initProtocolMessage.threshold()
-            );
+        if(initProtocolMessage.participantType() == ParticipantType.TRECOVER) {
+            if(initProtocolMessage.target().equals(clientId)) {
+                TssBridge.generateTrecoverTargetInput(
+                        initProtocolMessage.participantIds(),
+                        tssAdapter.getAuxInfo(initProtocolMessage.sid()),
+                        initProtocolMessage.threshold()
+                );
+            }
+            else {
+                TssBridge.generateTrecoverHelperInput(
+                        initProtocolMessage.participantIds(),
+                        clientId,
+                        initProtocolMessage.target(),
+                        tssAdapter.getTShare(initProtocolMessage.sid()),
+                        tssAdapter.getAuxInfo(initProtocolMessage.sid()),
+                        initProtocolMessage.threshold()
+                );
+            }
         }
 
         throw new TssException(ErrorCode.PARTICIPANT_TYPE_ERROR);

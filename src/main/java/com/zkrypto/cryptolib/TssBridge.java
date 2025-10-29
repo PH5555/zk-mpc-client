@@ -67,6 +67,40 @@ public class TssBridge {
     public static native String generateTpresignInput(String[] signerParticipantIds, String auxinfoOutput, String tshareOutput);
 
     /**
+     * TRecover (키 복구) 프로토콜에서 'Helper' 역할을 수행할 참여자의 입력 데이터를 생성합니다.
+     *
+     * @param helperParticipantIds  복구에 도움을 줄 참여자 ID 배열 (myId 포함)
+     * @param myParticipantId       현재 참여자(Helper)의 ID (문자열 형태의 u64)
+     * @param targetParticipantId   키를 복구할 대상(Target)의 ID (문자열 형태의 u64)
+     * @param tshareOutput          TShare 프로토콜의 JSON 결과
+     * @param auxinfoOutput         AuxInfo 프로토콜의 JSON 결과
+     * @param threshold             복구에 필요한 임계값 (t)
+     * @return JSON 직렬화된 TRecover (Helper) 입력 데이터
+     */
+    public static native String generateTrecoverHelperInput(
+            String[] helperParticipantIds,
+            String myParticipantId,
+            String targetParticipantId,
+            String tshareOutput,
+            String auxinfoOutput,
+            int threshold
+    );
+
+    /**
+     * TRecover (키 복구) 프로토콜에서 'Target' 역할을 수행할 참여자의 입력 데이터를 생성합니다.
+     *
+     * @param helperParticipantIds 복구에 도움을 줄 참여자 ID 배열
+     * @param auxinfoOutput        AuxInfo 프로토콜의 JSON 결과
+     * @param threshold            복구에 필요한 임계값 (t)
+     * @return JSON 직렬화된 TRecover (Target) 입력 데이터
+     */
+    public static native String generateTrecoverTargetInput(
+            String[] helperParticipantIds,
+            String auxinfoOutput,
+            int threshold
+    );
+
+    /**
      * Sign 프로토콜에 필요한 입력값을 생성합니다.
      *
      * @param myId 자신의 참여자 ID
