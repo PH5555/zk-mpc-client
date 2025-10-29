@@ -12,7 +12,8 @@ import java.util.Arrays;
 public enum ParticipantType {
     AUXINFO("AuxInfo"),
     TSHARE("TShare"),
-    TRECOVER("TRecover"),
+    TRECOVERHELPER("TRecoverHelper"),
+    TRECOVERTARGET("TRecoverTarget"),
     TPRESIGN("TPreSign"),
     SIGN("Sign");
 
