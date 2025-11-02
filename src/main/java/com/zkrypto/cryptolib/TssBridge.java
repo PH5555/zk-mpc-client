@@ -90,12 +90,14 @@ public class TssBridge {
      * TRecover (키 복구) 프로토콜에서 'Target' 역할을 수행할 참여자의 입력 데이터를 생성합니다.
      *
      * @param helperParticipantIds 복구에 도움을 줄 참여자 ID 배열
+     * @param my_participant_id    target ID
      * @param auxinfoOutput        AuxInfo 프로토콜의 JSON 결과
      * @param threshold            복구에 필요한 임계값 (t)
      * @return JSON 직렬화된 TRecover (Target) 입력 데이터
      */
     public static native String generateTrecoverTargetInput(
             String[] helperParticipantIds,
+            String my_participant_id,
             String auxinfoOutput,
             int threshold
     );

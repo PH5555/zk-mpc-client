@@ -97,6 +97,7 @@ public class TssService {
         if(initProtocolMessage.participantType() == ParticipantType.TRECOVERTARGET) {
             return TssBridge.generateTrecoverTargetInput(
                     initProtocolMessage.participantIds(),
+                    initProtocolMessage.target(),
                     tssAdapter.getAuxInfo(initProtocolMessage.sid()),
                     initProtocolMessage.threshold()
             );
