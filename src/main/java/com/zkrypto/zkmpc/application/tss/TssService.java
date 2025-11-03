@@ -48,7 +48,8 @@ public class TssService {
         log.info("팩토리 생성 끝");
 
         // 타입이 AUXINFO이면 그룹 정보 저장
-        if(initProtocolMessage.participantType() == ParticipantType.AUXINFO) {
+        if(initProtocolMessage.participantType() == ParticipantType.AUXINFO_GENERATION ||
+                initProtocolMessage.participantType() == ParticipantType.AUXINFO_RECOVER) {
             tssAdapter.saveGroup(initProtocolMessage.sid());
         }
 
@@ -64,7 +65,8 @@ public class TssService {
      * @return input 데이터
      */
     private String generateInput(InitProtocolMessage initProtocolMessage) {
-        if(initProtocolMessage.participantType() == ParticipantType.AUXINFO) {
+        if(initProtocolMessage.participantType() == ParticipantType.AUXINFO_GENERATION ||
+                initProtocolMessage.participantType() == ParticipantType.AUXINFO_RECOVER) {
             return "";
         }
 
@@ -221,7 +223,7 @@ public class TssService {
      * @param type 프로토콜 타입
      */
     private void saveOutput(DelegateOutput output, String type, String sid) {
-        if(type.equals(ParticipantType.AUXINFO.getTypeName())) {
+        if(type.equals(ParticipantType.AUXINFO_GENERATION.getTypeName())) {
             tssAdapter.saveAuxInfo(sid, output.getDoneMessage().toString());
             return;
         }
