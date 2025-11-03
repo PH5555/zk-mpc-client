@@ -224,6 +224,9 @@ public class TssService {
      */
     private void saveOutput(DelegateOutput output, String type, String sid) {
         if(type.equals(ParticipantType.AUXINFO_GENERATION.getTypeName())) {
+            if(!tssAdapter.existTssByGroupId(sid)) {
+                tssAdapter.saveGroup(sid);
+            }
             tssAdapter.saveAuxInfo(sid, output.getDoneMessage().toString());
             return;
         }

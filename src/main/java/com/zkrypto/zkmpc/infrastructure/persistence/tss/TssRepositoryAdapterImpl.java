@@ -58,4 +58,9 @@ public class TssRepositoryAdapterImpl implements TssRepositoryAdapter {
         return tssRepository.findTssByGroupId(groupId)
                 .orElseThrow(() -> new TssException(ErrorCode.NOT_FOUND_TSS));
     }
+
+    @Override
+    public Boolean existTssByGroupId(String groupId) {
+        return tssRepository.existTssByGroupId(groupId);
+    }
 }

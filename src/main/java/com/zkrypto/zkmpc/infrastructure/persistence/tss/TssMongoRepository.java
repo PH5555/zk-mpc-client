@@ -8,4 +8,6 @@ import java.util.Optional;
 @Repository
 public interface TssMongoRepository extends MongoRepository<Tss, String> {
     Optional<Tss> findByGroupId(String groupId);
+
+    boolean existsTssByGroupId(String groupId);
 }
