@@ -47,12 +47,6 @@ public class TssService {
         );
         log.info("팩토리 생성 끝");
 
-        // 타입이 AUXINFO이면 그룹 정보 저장
-        if(initProtocolMessage.participantType() == ParticipantType.AUXINFO_GENERATION ||
-                initProtocolMessage.participantType() == ParticipantType.AUXINFO_RECOVER) {
-            tssAdapter.saveGroup(initProtocolMessage.sid());
-        }
-
         // 팩토리 생성 완료 메시지 전송
         log.info("프로토콜 초기화 완료 메시지 전송");
         InitProtocolEndEvent event = InitProtocolEndEvent.builder().memberId(clientId).type(initProtocolMessage.participantType()).sid(initProtocolMessage.sid()).build();
