@@ -10,7 +10,8 @@ import java.util.Arrays;
 @AllArgsConstructor
 @Getter
 public enum ParticipantType {
-    AUXINFO("AuxInfo"),
+    AUXINFO_GENERATION("AuxInfo"),
+    AUXINFO_RECOVER("AuxInfo"),
     TSHARE("TShare"),
     TRECOVERHELPER("TRecoverHelper"),
     TRECOVERTARGET("TRecoverTarget"),

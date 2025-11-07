@@ -17,6 +17,11 @@ public class TssRepositoryImpl implements TssRepository {
     }
 
     @Override
+    public Boolean existTssByGroupId(String groupId) {
+        return tssMongoRepository.existsTssByGroupId(groupId);
+    }
+
+    @Override
     public void save(Tss tss) {
         tssMongoRepository.save(tss);
     }
