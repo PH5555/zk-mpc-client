@@ -22,7 +22,7 @@ public class TssMessageConsumer {
     private final TssService tssService;
 
     @RabbitListener(bindings = @QueueBinding(
-            value = @Queue(value = "", durable = "true", exclusive = "true", autoDelete = "false"),
+            value = @Queue(value = "tss.message.handle.${client.id}", durable = "true", exclusive = "false", autoDelete = "false"),
             exchange = @Exchange(value = RabbitMqConfig.TSS_EXCHANGE, type = ExchangeTypes.TOPIC),
             key = RabbitMqConfig.TSS_ROUND_ROUTING_KEY_PREFIX + "." + "${client.id}"
     ))
@@ -32,7 +32,7 @@ public class TssMessageConsumer {
     }
 
     @RabbitListener(bindings = @QueueBinding(
-            value = @Queue(value = "", durable = "true", exclusive = "true", autoDelete = "false"),
+            value = @Queue(value = "tss.start.${client.id}", durable = "true", exclusive = "false", autoDelete = "false"),
             exchange = @Exchange(value = RabbitMqConfig.TSS_EXCHANGE, type = ExchangeTypes.TOPIC),
             key = RabbitMqConfig.TSS_START_ROUTING_KEY_PREFIX + "." + "${client.id}"
     ))
@@ -42,7 +42,7 @@ public class TssMessageConsumer {
     }
 
     @RabbitListener(bindings = @QueueBinding(
-            value = @Queue(value = "", durable = "true", exclusive = "true", autoDelete = "false"),
+            value = @Queue(value = "tss.init.${client.id}", durable = "true", exclusive = "false", autoDelete = "false"),
             exchange = @Exchange(value = RabbitMqConfig.TSS_EXCHANGE, type = ExchangeTypes.TOPIC),
             key = RabbitMqConfig.TSS_INIT_ROUTING_KEY_PREFIX + "." + "${client.id}"
     ))

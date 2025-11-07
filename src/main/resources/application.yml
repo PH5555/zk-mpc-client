@@ -15,6 +15,9 @@ spring:
     listener:
       simple:
         default-requeue-rejected: false
+        acknowledge-mode: manual
 
 client:
   id: "1"
+server:
+  port: 8081
