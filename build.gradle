@@ -40,6 +40,10 @@ dependencies {
 	//jackson
 	implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.1'
 
+	//aop
+	implementation 'org.springframework.boot:spring-boot-starter-aop'
+
+	implementation files('libs/common-dto-1.0-SNAPSHOT.jar')
 	//lombok
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'

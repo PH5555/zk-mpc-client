@@ -1,5 +1,6 @@
 package com.zkrypto.zkmpc.application.tss.constant;
 
+import com.zkrypto.constant.ParticipantType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

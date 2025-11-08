@@ -20,4 +20,4 @@ spring:
 client:
   id: "1"
 server:
-  port: 8081
+  port: 8080

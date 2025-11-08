@@ -1,6 +1,9 @@
 package com.zkrypto.zkmpc.application.tss;
 
+import com.zkrypto.constant.ParticipantType;
 import com.zkrypto.cryptolib.TssBridge;
+import com.zkrypto.dto.InitProtocolMessage;
+import com.zkrypto.dto.StartProtocolMessage;
 import com.zkrypto.zkmpc.application.message.MessageBroker;
 import com.zkrypto.zkmpc.application.message.dto.InitProtocolEndEvent;
 import com.zkrypto.zkmpc.application.message.dto.ProtocolCompleteEvent;
@@ -13,9 +16,6 @@ import com.zkrypto.zkmpc.application.tss.constant.DelegateOutputStatus;
 import com.zkrypto.zkmpc.common.exception.ErrorCode;
 import com.zkrypto.zkmpc.common.exception.TssException;
 import com.zkrypto.zkmpc.common.util.JsonUtil;
-import com.zkrypto.zkmpc.application.tss.constant.ParticipantType;
-import com.zkrypto.zkmpc.infrastructure.amqp.dto.InitProtocolMessage;
-import com.zkrypto.zkmpc.infrastructure.amqp.dto.StartProtocolMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;

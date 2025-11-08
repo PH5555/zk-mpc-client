@@ -27,12 +27,12 @@ public class ContinueMessage {
      */
     public Round extractRound() {
         if (this.message_type == null || this.message_type.isEmpty()) {
-            throw new TssException(ErrorCode.NOT_FOUND_ROUND);
+            throw new TssException(ErrorCode.NOT_FOUND_ROUND_ERROR);
         }
 
         return this.message_type.values().stream()
                 .findFirst()
                 .map(Round::fromName)
-                .orElseThrow(() -> new TssException(ErrorCode.NOT_FOUND_ROUND));
+                .orElseThrow(() -> new TssException(ErrorCode.NOT_FOUND_ROUND_ERROR));
     }
 }
