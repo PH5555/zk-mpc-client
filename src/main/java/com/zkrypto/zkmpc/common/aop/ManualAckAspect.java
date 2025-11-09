@@ -58,11 +58,12 @@ public class ManualAckAspect {
         } catch (Throwable t) {
             // NACK 전송
             if (channel != null && deliveryTag != null) {
-                log.error("[AOP] 비즈니스 로직 실패. NACK 전송. (Tag: {}, Error: {})", deliveryTag, t.getMessage());
                 try {
                     channel.basicNack(deliveryTag, false, false);
                 } catch (IOException e) {
                     throw new TssException(ErrorCode.RABBITMQ_CLIENT_ERROR);
+                } finally {
+                    log.error("[AOP] 비즈니스 로직 실패. NACK 전송. (Tag: {}, Error: {})", deliveryTag, t.getMessage());
                 }
             } else {
                 log.error("[AOP] 비즈니스 로직 실패, (Channel/Tag 없음) (Error: {})", t.getMessage());

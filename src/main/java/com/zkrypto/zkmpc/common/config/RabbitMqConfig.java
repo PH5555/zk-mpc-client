@@ -32,7 +32,8 @@ public class RabbitMqConfig {
     public static final String TSS_START_ROUTING_KEY_PREFIX = "topic.start";
     public static final String TSS_PROTOCOL_COMPLETE_KEY_PREFIX = "topic.complete";
 
-    public static final String TSS_DLX_EXCHANGE = "tss.exchange.dlx";
+    public static final String TSS_DLX_EXCHANGE = "tss.dead.letter.exchange";
+    public static final String TSS_DLQ_QUEUE = "tss.dead.letter.queue";
     public static final String TSS_DLQ_ROUTING_KEY = "tss.dead.letter.key";
 
     @Bean
