@@ -5,8 +5,6 @@ import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.amqp.support.converter.DefaultJackson2JavaTypeMapper;
-import org.springframework.amqp.support.converter.Jackson2JavaTypeMapper;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,6 +23,7 @@ public class RabbitMqConfig {
     private String password;
 
     public static final String TSS_EXCHANGE = "tss.exchange";
+
     public static final String TSS_ROUND_END_ROUTING_KEY_PREFIX = "topic.round.end";
     public static final String TSS_ROUND_COMPLETE_KEY_PREFIX = "topic.round.complete";
     public static final String TSS_ROUND_ROUTING_KEY_PREFIX = "topic.round";
@@ -32,6 +31,9 @@ public class RabbitMqConfig {
     public static final String TSS_INIT_END_ROUTING_KEY_PREFIX = "topic.init.end";
     public static final String TSS_START_ROUTING_KEY_PREFIX = "topic.start";
     public static final String TSS_PROTOCOL_COMPLETE_KEY_PREFIX = "topic.complete";
+
+    public static final String TSS_DLX_EXCHANGE = "tss.exchange.dlx";
+    public static final String TSS_DLQ_ROUTING_KEY = "tss.dead.letter.key";
 
     @Bean
     public TopicExchange tssExchange() {

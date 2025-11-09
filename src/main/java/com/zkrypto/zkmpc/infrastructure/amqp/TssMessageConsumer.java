@@ -10,10 +10,7 @@ import com.zkrypto.zkmpc.common.config.RabbitMqConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.ExchangeTypes;
-import org.springframework.amqp.rabbit.annotation.Exchange;
-import org.springframework.amqp.rabbit.annotation.Queue;
-import org.springframework.amqp.rabbit.annotation.QueueBinding;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.annotation.*;
 import org.springframework.amqp.support.AmqpHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
@@ -29,7 +26,17 @@ public class TssMessageConsumer {
     @RabbitListener(bindings = @QueueBinding(
             value = @Queue(value = "tss.message.handle.${client.id}", durable = "true", exclusive = "false", autoDelete = "false"),
             exchange = @Exchange(value = RabbitMqConfig.TSS_EXCHANGE, type = ExchangeTypes.TOPIC),
-            key = RabbitMqConfig.TSS_ROUND_ROUTING_KEY_PREFIX + "." + "${client.id}"
+            key = RabbitMqConfig.TSS_ROUND_ROUTING_KEY_PREFIX + "." + "${client.id}",
+            arguments = {
+                    @Argument(
+                            name = "x-dead-letter-exchange",
+                            value = RabbitMqConfig.TSS_DLX_EXCHANGE
+                    ),
+                    @Argument(
+                            name = "x-dead-letter-routing-key",
+                            value = RabbitMqConfig.TSS_DLQ_ROUTING_KEY
+                    )
+            }
     ))
     public void handleTssMessage(ProceedRoundMessage message, Channel channel, @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag) {
         log.info("라운드 메시지 수신");
@@ -40,7 +47,18 @@ public class TssMessageConsumer {
     @RabbitListener(bindings = @QueueBinding(
             value = @Queue(value = "tss.start.${client.id}", durable = "true", exclusive = "false", autoDelete = "false"),
             exchange = @Exchange(value = RabbitMqConfig.TSS_EXCHANGE, type = ExchangeTypes.TOPIC),
-            key = RabbitMqConfig.TSS_START_ROUTING_KEY_PREFIX + "." + "${client.id}"
+            key = RabbitMqConfig.TSS_START_ROUTING_KEY_PREFIX + "." + "${client.id}",
+            arguments = {
+                    @Argument(
+                            name = "x-dead-letter-exchange",
+                            value = RabbitMqConfig.TSS_DLX_EXCHANGE
+                    ),
+                    @Argument(
+                            name = "x-dead-letter-routing-key",
+                            value = RabbitMqConfig.TSS_DLQ_ROUTING_KEY
+
+                    )
+            }
     ))
     public void startTssProtocol(StartProtocolMessage message, Channel channel, @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag) {
         log.info("프로토콜 시작 메시지 수신");
@@ -51,7 +69,18 @@ public class TssMessageConsumer {
     @RabbitListener(bindings = @QueueBinding(
             value = @Queue(value = "tss.init.${client.id}", durable = "true", exclusive = "false", autoDelete = "false"),
             exchange = @Exchange(value = RabbitMqConfig.TSS_EXCHANGE, type = ExchangeTypes.TOPIC),
-            key = RabbitMqConfig.TSS_INIT_ROUTING_KEY_PREFIX + "." + "${client.id}"
+            key = RabbitMqConfig.TSS_INIT_ROUTING_KEY_PREFIX + "." + "${client.id}",
+            arguments = {
+                    @Argument(
+                            name = "x-dead-letter-exchange",
+                            value = RabbitMqConfig.TSS_DLX_EXCHANGE
+                    ),
+                    @Argument(
+                            name = "x-dead-letter-routing-key",
+                            value = RabbitMqConfig.TSS_DLQ_ROUTING_KEY
+
+                    )
+            }
     ))
     public void initTssProtocol(InitProtocolMessage message, Channel channel, @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag) {
         log.info("프로토콜 초기화 메시지 수신");
