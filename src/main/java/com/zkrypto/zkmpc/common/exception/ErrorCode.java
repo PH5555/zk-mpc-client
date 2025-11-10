@@ -16,6 +16,7 @@ public enum ErrorCode {
 
     NOT_RABBITMQ_TARGET_ERROR("M001", HttpStatus.BAD_REQUEST, "해당 메서드에 ManualAck를 적용할 수 없습니다."),
     RABBITMQ_CLIENT_ERROR("M002", HttpStatus.INTERNAL_SERVER_ERROR, "rabbitMQ 메시지를 전송할 수 없습니다."),
+    RABBITMQ_LISTENER_PARAMETER_ERROR("M002", HttpStatus.INTERNAL_SERVER_ERROR, "rabbitMQ Listener에 파라미터가 없습니다."),
     ;
 
     private String errorCode;
