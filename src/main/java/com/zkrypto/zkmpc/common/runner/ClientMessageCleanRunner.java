@@ -34,15 +34,14 @@ public class ClientMessageCleanRunner implements ApplicationRunner {
     public void run(ApplicationArguments args) throws Exception {
         log.info("client message clean runner start");
         String sid = rabbitMqPurger.purgeWithSid();
+        listenerRegistry.getListenerContainers().forEach(Lifecycle::start);
 
         // 큐를 비운 경우에만 서버에 재시작 요청
         if (sid != null) {
             log.info("프로토콜 재시작 요청");
             ErrorMessage errorMessage = new ErrorMessage(sid, ErrorCode.RABBITMQ_RESTART.getMessage());
 
-            rabbitTemplate.convertAndSend(RabbitMqConfig.TSS_DLX_EXCHANGE, RabbitMqConfig.TSS_DLQ_ROUTING_KEY, errorMessage);
+            rabbitTemplate.convertAndSend(RabbitMqConfig.TSS_EXCHANGE, RabbitMqConfig.TSS_ERROR_HANDLE_KEY_PREFIX, errorMessage);
         }
-
-        listenerRegistry.getListenerContainers().forEach(Lifecycle::start);
     }
 }

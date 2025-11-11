@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.rabbit.listener.RabbitListenerEndpointRegistry;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,9 +33,9 @@ public class RabbitMqConfig {
     public static final String TSS_INIT_END_ROUTING_KEY_PREFIX = "topic.init.end";
     public static final String TSS_START_ROUTING_KEY_PREFIX = "topic.start";
     public static final String TSS_PROTOCOL_COMPLETE_KEY_PREFIX = "topic.complete";
+    public static final String TSS_ERROR_HANDLE_KEY_PREFIX = "topic.error.handle";
 
     public static final String TSS_DLX_EXCHANGE = "tss.dead.letter.exchange";
-    public static final String TSS_DLQ_QUEUE = "tss.dead.letter.queue";
     public static final String TSS_DLQ_ROUTING_KEY = "tss.dead.letter.key";
 
     @Bean
@@ -62,5 +64,10 @@ public class RabbitMqConfig {
         rabbitTemplate.setConnectionFactory(connectionFactory);
         rabbitTemplate.setMessageConverter(jsonMessageConverter);
         return rabbitTemplate;
+    }
+
+    @Bean
+    public RabbitAdmin rabbitAdmin(ConnectionFactory connectionFactory) {
+        return new RabbitAdmin(connectionFactory);
     }
 }

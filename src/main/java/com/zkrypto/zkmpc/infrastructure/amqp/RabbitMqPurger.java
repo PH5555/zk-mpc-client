@@ -5,17 +5,25 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.GetResponse;
 import com.zkrypto.zkmpc.application.message.MessagePurger;
+import com.zkrypto.zkmpc.common.config.RabbitMqConfig;
 import com.zkrypto.zkmpc.common.exception.ErrorCode;
 import com.zkrypto.zkmpc.common.exception.TssException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.core.Binding;
+import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.TopicExchange;
+import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -23,6 +31,7 @@ import java.util.List;
 public class RabbitMqPurger implements MessagePurger {
     private final RabbitTemplate rabbitTemplate;
     private final ObjectMapper objectMapper;
+
     @Value("${client.id}")
     private String clientId;
 
@@ -31,6 +40,7 @@ public class RabbitMqPurger implements MessagePurger {
             "tss.start.",
             "tss.init.");
 
+
     @Override
     public Boolean purge() {
         return rabbitTemplate.execute(channel -> {
@@ -38,6 +48,7 @@ public class RabbitMqPurger implements MessagePurger {
             try {
                 for (String queueName : queueNameList) {
                     queueName += clientId;
+
                     // MPC 큐에 남아 있는 메시지 수 조회
                     long messageCount = channel.messageCount(queueName);
 
@@ -66,6 +77,7 @@ public class RabbitMqPurger implements MessagePurger {
             try {
                 for (String queueName : queueNameList) {
                     queueName += clientId;
+
                     // MPC 큐에 남아 있는 메시지 수 조회
                     long messageCount = channel.messageCount(queueName);
 
@@ -73,12 +85,13 @@ public class RabbitMqPurger implements MessagePurger {
                     if (messageCount > 0) {
 
                         log.info("{} 큐에 {}개의 메시지가 남아있어 비정상 재시작으로 간주합니다. 큐를 비웁니다.", queueName, messageCount);
-                        channel.queuePurge(queueName);
                         sid = extractSid(channel, queueName);
+                        channel.queuePurge(queueName);
                     }
                 }
                 return sid;
             } catch (Exception e) {
+                log.info(e.getMessage());
                 throw new TssException(ErrorCode.RABBITMQ_QUEUE_RESET_ERROR);
             }
         });

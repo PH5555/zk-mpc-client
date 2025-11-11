@@ -31,7 +31,7 @@ public class SidLockAspect {
     private final String MESSAGE_DTO = "errorMessage";
     private final String SESSION_ID = "sid";
 
-    @Around("@annotation(com.zkrypto.zkmpc.common.annotation.ManualAck)")
+    @Around("@annotation(com.zkrypto.zkmpc.common.annotation.SidLock)")
     public Object handleSidLock(ProceedingJoinPoint pjp) {
         Signature signature = pjp.getSignature();
         String sid = (String) findParameter(pjp, SESSION_ID);
