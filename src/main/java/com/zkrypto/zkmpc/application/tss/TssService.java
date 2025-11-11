@@ -164,6 +164,7 @@ public class TssService {
      * @param sid 그룹 id
      * @param processResult delegate 결과
      */
+
     private void handleContinue(DelegateOutput output, String originalMessage, String type, String sid, String processResult) {
         if (!output.getContinueMessages().isEmpty()) {
             // 처리할 메시지가 남아있는 경우: 다음 라운드로 메시지 전달
