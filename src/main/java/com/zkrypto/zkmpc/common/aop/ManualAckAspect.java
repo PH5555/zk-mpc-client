@@ -72,29 +72,21 @@ public class ManualAckAspect {
             // NACK 대신, sessionId를 DLQ로 직접 전송
             log.warn("[AOP] 비즈니스 로직 실패. (Error: {})", t.getMessage());
 
-            try {
-                if (channel == null || deliveryTag == null) {
-                    throw new TssException(ErrorCode.NOT_RABBITMQ_TARGET_ERROR);
+            if (channel != null && deliveryTag != null) {
+                log.error("[AOP] 비즈니스 로직 실패. NACK 전송. (Tag: {}, Error: {})", deliveryTag, t.getMessage());
+                try {
+                    channel.basicNack(deliveryTag, false, false);
+                } catch (IOException e) {
+                    throw new TssException(ErrorCode.RABBITMQ_CLIENT_ERROR);
+                } finally {
+                    log.error("[AOP] 비즈니스 로직 실패. NACK 전송. (Tag: {}, Error: {})", deliveryTag, t.getMessage());
                 }
+            } else {
+                log.error("[AOP] 비즈니스 로직 실패, (Channel/Tag 없음) (Error: {})", t.getMessage());
 
-                String sessionId = findSessionIdValue(pjp);
-                ErrorMessage errorMessage = new ErrorMessage(sessionId, t.getMessage());
-
-                // DLX로 메시지 직접 전송
-                rabbitTemplate.convertAndSend(
-                        RabbitMqConfig.TSS_DLX_EXCHANGE,
-                        RabbitMqConfig.TSS_DLQ_ROUTING_KEY,
-                        errorMessage
-                );
-                log.info("[AOP] {} 세션 에러, DLX로 전송 완료.", sessionId);
-
-                channel.basicAck(deliveryTag, false);
-
-            } catch (Exception e) {
-                log.error("[AOP] DLQ 전송 및 ACK 처리 중 오류 발생.", e);
             }
 
-            return null;
+                return null;
         }
     }
 

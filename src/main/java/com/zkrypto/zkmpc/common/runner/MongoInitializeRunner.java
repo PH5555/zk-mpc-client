@@ -1,4 +1,4 @@
-package com.zkrypto.zkmpc.common.config;
+package com.zkrypto.zkmpc.common.runner;
 
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
@@ -8,7 +8,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 
 @Configuration
 @Profile("!prod")
-public class MongoInitializer {
+public class MongoInitializeRunner {
     @Bean
     public ApplicationRunner init(MongoTemplate mongoTemplate) {
         return args -> {
