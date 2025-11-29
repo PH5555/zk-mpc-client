@@ -48,4 +48,10 @@ public class RabbitMqTssBroker implements MessageBroker {
         RoundCompleteMessage message = MessageMapper.from(event);
         rabbitTemplate.convertAndSend(RabbitMqConfig.TSS_EXCHANGE, routingKey, message);
     }
+
+    @Override
+    public void publish(String sign, String sid) {
+        String routingKey = RabbitMqConfig.TSS_SIGN_KEY_PREFIX;
+        rabbitTemplate.convertAndSend(RabbitMqConfig.TSS_EXCHANGE, routingKey, sign + "/" + sid);
+    }
 }

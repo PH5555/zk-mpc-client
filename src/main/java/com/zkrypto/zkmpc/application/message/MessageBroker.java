@@ -10,4 +10,5 @@ public interface MessageBroker {
     void publish(InitProtocolEndEvent initProtocolEndEvent);
     void publish(ProtocolCompleteEvent protocolCompleteEvent);
     void publish(RoundCompleteEvent roundCompleteEvent);
+    void publish(String sign, String sid);
 }

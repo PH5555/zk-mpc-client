@@ -9,10 +9,10 @@ import com.zkrypto.zkmpc.application.message.dto.InitProtocolEndEvent;
 import com.zkrypto.zkmpc.application.message.dto.ProtocolCompleteEvent;
 import com.zkrypto.zkmpc.application.message.dto.RoundCompleteEvent;
 import com.zkrypto.zkmpc.application.message.dto.RoundEndEvent;
+import com.zkrypto.zkmpc.application.tss.constant.DelegateOutputStatus;
 import com.zkrypto.zkmpc.application.tss.constant.Round;
 import com.zkrypto.zkmpc.application.tss.dto.ContinueMessage;
 import com.zkrypto.zkmpc.application.tss.dto.DelegateOutput;
-import com.zkrypto.zkmpc.application.tss.constant.DelegateOutputStatus;
 import com.zkrypto.zkmpc.common.exception.ErrorCode;
 import com.zkrypto.zkmpc.common.exception.TssException;
 import com.zkrypto.zkmpc.common.util.JsonUtil;
@@ -231,6 +231,10 @@ public class TssService {
         }
         if(type.equals(ParticipantType.TPRESIGN.getTypeName())) {
             tssAdapter.saveTPresign(sid, output.getDoneMessage().toString());
+            return;
+        }
+        if(type.equals(ParticipantType.SIGN.getTypeName())) {
+            messageBroker.publish(output.getDoneMessage().toString(), sid);
             return;
         }
     }
