@@ -208,6 +208,7 @@ public class TssService {
                 .type(ParticipantType.of(type))
                 .memberId(clientId)
                 .sid(sid)
+                .message(output.getDoneMessage().toString())
                 .build();
         messageBroker.publish(event);
     }

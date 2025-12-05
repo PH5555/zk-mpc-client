@@ -19,7 +19,7 @@ public class MessageMapper {
     }
 
     public static ProtocolCompleteMessage from(ProtocolCompleteEvent event) {
-        return new ProtocolCompleteMessage(event.sid(), event.memberId(), event.type());
+        return new ProtocolCompleteMessage(event.sid(), event.memberId(), event.type(), event.message());
     }
 
     public static RoundCompleteMessage from(RoundCompleteEvent event) {

@@ -7,6 +7,7 @@ import lombok.Builder;
 public record ProtocolCompleteEvent(
         String sid,
         String memberId,
-        ParticipantType type
+        ParticipantType type,
+        String message
 ) {
 }
